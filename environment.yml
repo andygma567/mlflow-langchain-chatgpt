@@ -231,8 +231,10 @@ dependencies:
   - pip:
       - beautifulsoup4==4.12.2
       - bs4==0.0.1
+      - pyngrok==7.0.0
       - regex==2023.8.8
       - soupsieve==2.5
       - tiktoken==0.5.1
 variables:
+  OPENAI_API_KEY: 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
 prefix: /Users/andrewma/opt/anaconda3/envs/mlflow
