@@ -88,14 +88,6 @@ with mlflow.start_run():
     print("Logging prediction")
     model_info = mlflow.llm.log_predictions(inputs, outputs, prompts)
 
-    # log the model, I can use the infer signature later if I want
-    print()
-    print("Currently there is a bug with logging models")
-    logged_model = mlflow.langchain.log_model(
-        llm_chain,
-        "langchain_llm_chain",
-    )
-
     # Logging the table artifacts
     print()
     print("Logging the table artifacts")
