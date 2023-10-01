@@ -21,7 +21,7 @@ import textwrap
 
 from langchain.chains import StuffDocumentsChain, LLMChain
 from langchain.prompts import PromptTemplate
-from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import WebBaseLoader
 from langchain.text_splitter import TokenTextSplitter
 
@@ -53,7 +53,7 @@ website = "https://sites.google.com/view/mnovackmath/home"
 
 # Instantiate the LLMChain and text splitter for use later
 prompt = PromptTemplate.from_template("Summarize this content: {context}")
-llm = OpenAI(model_name="gpt-3.5-turbo")
+llm = ChatOpenAI(model_name="gpt-3.5-turbo")
 llm_chain = LLMChain(llm=llm, prompt=prompt)
 stuff_chain = StuffDocumentsChain(llm_chain=llm_chain)
 text_splitter = TokenTextSplitter(chunk_size=4000, chunk_overlap=0)
