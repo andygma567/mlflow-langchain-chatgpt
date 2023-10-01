@@ -24,16 +24,21 @@ from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import WebBaseLoader
 from langchain.text_splitter import TokenTextSplitter
-from pyngrok import ngrok
+# from pyngrok import ngrok
 
+import getpass
 import mlflow
 import pandas as pd
 
 # Set the API key - if this key gets committed to a gitrepo then it gets
 # disabled
-NGROK_AUTH_TOKEN = ""
-ngrok.set_auth_token(NGROK_AUTH_TOKEN)
-MY_API_KEY = ""
+# Check if NGROK_AUTH_TOKEN is set and is not an empty string, if not, ask user to input it
+# NGROK_AUTH_TOKEN = os.getenv('NGROK_AUTH_TOKEN') or \
+#     getpass.getpass('Enter your ngrok auth token: ')
+# ngrok.set_auth_token(NGROK_AUTH_TOKEN)
+# Check if MY_API_KEY is set and is not an empty string, if not, ask user to input it
+MY_API_KEY = os.getenv('OPENAI_API_KEY') or \
+    getpass.getpass('Enter your OpenAI API key: ')
 os.environ["OPENAI_API_KEY"] = MY_API_KEY
 
 website = "https://sites.google.com/view/mnovackmath/home"
@@ -78,10 +83,10 @@ with mlflow.start_run():
     # log the model, I can use the infer signature later if I want
     print()
     print('Currently there is a bug with logging models')
-    # logged_model = mlflow.langchain.log_model(
-    #     llm_chain,
-    #     "langchain_llm_chain",
-    # )
+    logged_model = mlflow.langchain.log_model(
+        llm_chain,
+        "langchain_llm_chain",
+    )
 
     # Logging the table artifacts
     print()
