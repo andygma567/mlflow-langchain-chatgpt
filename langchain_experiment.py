@@ -6,13 +6,13 @@ Original file is located at
     https://colab.research.google.com/drive/1N8Kgpl3tlggmOTGtsqxR0x--oHW3i91y
 
 When using conda I need to use `which` to be sure that I'm using the 
-correct python and pip for installs. 
+correct python and pip for installs. Sometimes I need to deactivate 
+multiple times in order to get out of the base environment. Then I activate
+the conda environment that I want and it uses the correct pip. See this link
+https://github.com/ContinuumIO/anaconda-issues/issues/1429#issuecomment-1044871389
 
 It helps to use the options python and pip when creating a new conda env
 with the conda create command. 
-
-I think the mlflow ui CLI command also works in the conda env but I may
-need to be careful in the future about which mlflow I'm using...
 """
 # Set the API key - if this key gets committed to a gitrepo then it gets
 # disabled
@@ -44,7 +44,7 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    # NGROK_AUTH_TOKEN = set_api_key('NGROK_AUTH_TOKEN', 
+    # NGROK_AUTH_TOKEN = set_api_key('NGROK_AUTH_TOKEN',
     # 'Enter your ngrok auth token: ')
     # ngrok.set_auth_token(NGROK_AUTH_TOKEN)
     MY_API_KEY = args.api_key
