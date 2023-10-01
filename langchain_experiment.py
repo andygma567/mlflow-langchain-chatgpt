@@ -6,13 +6,13 @@ Original file is located at
     https://colab.research.google.com/drive/1N8Kgpl3tlggmOTGtsqxR0x--oHW3i91y
 
 When using conda I need to use `which` to be sure that I'm using the 
-correct python and pip for installs. 
+correct python and pip for installs. Sometimes I need to deactivate 
+multiple times in order to get out of the base environment. Then I activate
+the conda environment that I want and it uses the correct pip. See this link
+https://github.com/ContinuumIO/anaconda-issues/issues/1429#issuecomment-1044871389
 
 It helps to use the options python and pip when creating a new conda env
 with the conda create command. 
-
-I think the mlflow ui CLI command also works in the conda env but I may
-need to be careful in the future about which mlflow I'm using...
 """
 # Set the API key - if this key gets committed to a gitrepo then it gets
 # disabled
@@ -27,29 +27,30 @@ from langchain.text_splitter import TokenTextSplitter
 
 # from pyngrok import ngrok
 
-import getpass
 import mlflow
 import pandas as pd
+import argparse
 
+# In theory I should be able to set the parameters as environment vars
+# so that I don't need to re-enter them every time...
+# such as if I want to run this via the command line
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Process API key and website")
+    parser.add_argument(
+        "--api-key", type=str, required=True, help="API key for the application"
+    )
+    parser.add_argument(
+        "--website", type=str, required=True, help="Website to summarize"
+    )
+    args = parser.parse_args()
 
-# Set the API key - if this key gets committed to a gitrepo then it gets
-# disabled
-def set_api_key(env_var_name, instruction):
-    api_key = os.environ.get(env_var_name, "") or getpass.getpass(instruction)
-    if not os.environ.get(env_var_name, ""):
-        print(
-            f"Please set the {env_var_name} conda environment variable to avoid entering it next time."
-        )
-        print(f"Example: conda env config vars set {env_var_name}='{api_key}' ")
-    return api_key
+    # NGROK_AUTH_TOKEN = set_api_key('NGROK_AUTH_TOKEN',
+    # 'Enter your ngrok auth token: ')
+    # ngrok.set_auth_token(NGROK_AUTH_TOKEN)
+    MY_API_KEY = args.api_key
+    os.environ["OPENAI_API_KEY"] = MY_API_KEY
 
-
-# NGROK_AUTH_TOKEN = set_api_key('NGROK_AUTH_TOKEN', 'Enter your ngrok auth token: ')
-# ngrok.set_auth_token(NGROK_AUTH_TOKEN)
-MY_API_KEY = set_api_key("OPENAI_API_KEY", "Enter your OpenAI API key: ")
-os.environ["OPENAI_API_KEY"] = MY_API_KEY
-
-website = "https://sites.google.com/view/mnovackmath/home"
+    website = args.website
 
 # Instantiate the LLMChain and text splitter for use later
 prompt = PromptTemplate.from_template("Summarize this content: {context}")

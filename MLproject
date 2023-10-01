@@ -1,0 +1,10 @@
+name: MyProject
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      MY_API_KEY: {type: string, default: ""}
+      WEBSITE: {type: string, default: "https://sites.google.com/view/mnovackmath/home"}
+    command: "python langchain_experiment.py --api-key {MY_API_KEY} --website {WEBSITE}"
