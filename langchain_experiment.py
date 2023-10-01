@@ -27,29 +27,30 @@ from langchain.text_splitter import TokenTextSplitter
 
 # from pyngrok import ngrok
 
-import getpass
 import mlflow
 import pandas as pd
+import argparse
 
+# In theory I should be able to set the parameters as environment vars
+# so that I don't need to re-enter them every time...
+# such as if I want to run this via the command line
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Process API key and website")
+    parser.add_argument(
+        "--api-key", type=str, required=True, help="API key for the application"
+    )
+    parser.add_argument(
+        "--website", type=str, required=True, help="Website to summarize"
+    )
+    args = parser.parse_args()
 
-# Set the API key - if this key gets committed to a gitrepo then it gets
-# disabled
-def set_api_key(env_var_name, instruction):
-    api_key = os.environ.get(env_var_name, "") or getpass.getpass(instruction)
-    if not os.environ.get(env_var_name, ""):
-        print(
-            f"Please set the {env_var_name} conda environment variable to avoid entering it next time."
-        )
-        print(f"Example: conda env config vars set {env_var_name}='{api_key}' ")
-    return api_key
+    # NGROK_AUTH_TOKEN = set_api_key('NGROK_AUTH_TOKEN', 
+    # 'Enter your ngrok auth token: ')
+    # ngrok.set_auth_token(NGROK_AUTH_TOKEN)
+    MY_API_KEY = args.api_key
+    os.environ["OPENAI_API_KEY"] = MY_API_KEY
 
-
-# NGROK_AUTH_TOKEN = set_api_key('NGROK_AUTH_TOKEN', 'Enter your ngrok auth token: ')
-# ngrok.set_auth_token(NGROK_AUTH_TOKEN)
-MY_API_KEY = set_api_key("OPENAI_API_KEY", "Enter your OpenAI API key: ")
-os.environ["OPENAI_API_KEY"] = MY_API_KEY
-
-website = "https://sites.google.com/view/mnovackmath/home"
+    website = args.website
 
 # Instantiate the LLMChain and text splitter for use later
 prompt = PromptTemplate.from_template("Summarize this content: {context}")
