@@ -21,7 +21,7 @@ import textwrap
 
 from langchain.chains import StuffDocumentsChain, LLMChain
 from langchain.prompts import PromptTemplate
-from langchain.chat_models import ChatOpenAI
+from langchain.llms import OpenAI
 from langchain.document_loaders import WebBaseLoader
 from langchain.text_splitter import TokenTextSplitter
 
@@ -53,7 +53,7 @@ website = "https://sites.google.com/view/mnovackmath/home"
 
 # Instantiate the LLMChain and text splitter for use later
 prompt = PromptTemplate.from_template("Summarize this content: {context}")
-llm = ChatOpenAI(model_name="gpt-3.5-turbo")
+llm = OpenAI(model_name="gpt-3.5-turbo")
 llm_chain = LLMChain(llm=llm, prompt=prompt)
 stuff_chain = StuffDocumentsChain(llm_chain=llm_chain)
 text_splitter = TokenTextSplitter(chunk_size=4000, chunk_overlap=0)
@@ -87,14 +87,6 @@ with mlflow.start_run():
     print()
     print("Logging prediction")
     model_info = mlflow.llm.log_predictions(inputs, outputs, prompts)
-
-    # log the model, I can use the infer signature later if I want
-    print()
-    print("Currently there is a bug with logging models")
-    logged_model = mlflow.langchain.log_model(
-        llm_chain,
-        "langchain_llm_chain",
-    )
 
     # Logging the table artifacts
     print()
