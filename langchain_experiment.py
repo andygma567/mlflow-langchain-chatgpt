@@ -24,16 +24,29 @@ from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
 from langchain.document_loaders import WebBaseLoader
 from langchain.text_splitter import TokenTextSplitter
-from pyngrok import ngrok
 
+# from pyngrok import ngrok
+
+import getpass
 import mlflow
 import pandas as pd
 
+
 # Set the API key - if this key gets committed to a gitrepo then it gets
 # disabled
-NGROK_AUTH_TOKEN = ""
-ngrok.set_auth_token(NGROK_AUTH_TOKEN)
-MY_API_KEY = ""
+def set_api_key(env_var_name, instruction):
+    api_key = os.environ.get(env_var_name, "") or getpass.getpass(instruction)
+    if not os.environ.get(env_var_name, ""):
+        print(
+            f"Please set the {env_var_name} conda environment variable to avoid entering it next time."
+        )
+        print(f"Example: conda env config vars set {env_var_name}='{api_key}' ")
+    return api_key
+
+
+# NGROK_AUTH_TOKEN = set_api_key('NGROK_AUTH_TOKEN', 'Enter your ngrok auth token: ')
+# ngrok.set_auth_token(NGROK_AUTH_TOKEN)
+MY_API_KEY = set_api_key("OPENAI_API_KEY", "Enter your OpenAI API key: ")
 os.environ["OPENAI_API_KEY"] = MY_API_KEY
 
 website = "https://sites.google.com/view/mnovackmath/home"
@@ -77,20 +90,19 @@ with mlflow.start_run():
 
     # log the model, I can use the infer signature later if I want
     print()
-    print('Currently there is a bug with logging models')
-    # logged_model = mlflow.langchain.log_model(
-    #     llm_chain,
-    #     "langchain_llm_chain",
-    # )
+    print("Currently there is a bug with logging models")
+    logged_model = mlflow.langchain.log_model(
+        llm_chain,
+        "langchain_llm_chain",
+    )
 
     # Logging the table artifacts
     print()
     print("Logging the table artifacts")
     data_dict = {
-        'prompts': prompts,
-        'inputs': inputs,
-        'outputs': outputs,
+        "prompts": prompts,
+        "inputs": inputs,
+        "outputs": outputs,
     }
     df = pd.DataFrame(data_dict)
     mlflow.log_table(data=df, artifact_file="prediction_results.json")
-
