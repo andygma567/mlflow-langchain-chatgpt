@@ -77,6 +77,7 @@ dependencies:
       - pyngrok==7.0.0
       - pyparsing==3.1.1
       - python-dateutil==2.8.2
+      - pytube==15.0.0
       - pytz==2023.3.post1
       - pyyaml==6.0.1
       - querystring-parser==1.2.4
@@ -102,5 +103,6 @@ dependencies:
       - websocket-client==1.6.3
       - werkzeug==3.0.0
       - yarl==1.9.2
+      - youtube-transcript-api==0.6.1
       - zipp==3.17.0
 prefix: /Users/andrewma/opt/anaconda3/envs/llm

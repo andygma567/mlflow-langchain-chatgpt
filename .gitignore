@@ -1,6 +1,9 @@
 # VS Code things
 .vscode/
 
+# MacOS things
+.DS_Store/
+
 # mlflow
 mlruns/
 flagged/

@@ -13,17 +13,24 @@ https://github.com/ContinuumIO/anaconda-issues/issues/1429#issuecomment-10448713
 
 It helps to use the options python and pip when creating a new conda env
 with the conda create command. 
+
+Sometimes I need to clear browser cache and cookies in order to get mlflow ui
+to load. 
 """
 # Set the API key - if this key gets committed to a gitrepo then it gets
 # disabled
 import os
-import textwrap
 
-from langchain.chains import StuffDocumentsChain, LLMChain
+from langchain.chains import (
+    StuffDocumentsChain,
+    LLMChain,
+    ReduceDocumentsChain,
+    MapReduceDocumentsChain,
+)
 from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
-from langchain.document_loaders import WebBaseLoader
 from langchain.text_splitter import TokenTextSplitter
+from langchain.document_loaders import YoutubeLoader
 
 # from pyngrok import ngrok
 
@@ -52,23 +59,50 @@ if __name__ == "__main__":
 
     website = args.website
 
-# Instantiate the LLMChain and text splitter for use later
-prompt = PromptTemplate.from_template("Summarize this content: {context}")
+# Instantiate the llm
 llm = ChatOpenAI(model_name="gpt-3.5-turbo")
-llm_chain = LLMChain(llm=llm, prompt=prompt)
-stuff_chain = StuffDocumentsChain(llm_chain=llm_chain)
+
+# Setting up the MapReduceDocumentsChain
+# Setting up the map step with LLMChain
+prompt_map = PromptTemplate.from_template("Summarize this content: {context}")
+llm_chain_map = LLMChain(llm=llm, prompt=prompt_map)
+
+# Setting up the reduce step
+prompt_reduce = PromptTemplate.from_template(
+    "Combine these summaries: {context}"
+)
+llm_chain_reduce = LLMChain(llm=llm, prompt=prompt_reduce)
+combine_documents_chain = StuffDocumentsChain(
+    llm_chain=llm_chain_reduce,
+)
+reduce_documents_chain = ReduceDocumentsChain(
+    combine_documents_chain=combine_documents_chain,
+    # The maximum number of tokens to group documents into.
+    token_max=4000,
+)
+
+# Creating the MapReduceDocumentsChain
+map_reduce_chain = MapReduceDocumentsChain(
+    llm_chain=llm_chain_map, reduce_documents_chain=reduce_documents_chain
+)
+
+# Set up the text splitter and document loader
 text_splitter = TokenTextSplitter(chunk_size=4000, chunk_overlap=0)
+
+# Load the documents
+loader = YoutubeLoader.from_youtube_url(
+    website.strip(),
+    add_video_info=True,
+)
+docs = loader.load_and_split(text_splitter=text_splitter)
 
 # Set up the experiment tracking
 mlflow.set_tracking_uri("")
-experiment = mlflow.set_experiment("Langchain + mlflow")
+experiment = mlflow.set_experiment("youtube_summarization")
 with mlflow.start_run():
-    # Load the documents
-    loader = WebBaseLoader(website)
-    docs = loader.load_and_split(text_splitter=text_splitter)
-
     # Log the number of docs
     print("Logging the number of docs")
+    print(f'Num docs: {len(docs)}')
     params = {
         "num_docs": len(docs),
         "website": website,
@@ -76,13 +110,15 @@ with mlflow.start_run():
     mlflow.log_params(params)
 
     # Make prediction
+    print()
+    print('Making prediction...')
     inputs = [docs[0].page_content]
-    outputs = [stuff_chain.run(docs[:1])]
-    prompts = [stuff_chain.llm_chain.prompt.template]
+    outputs = [map_reduce_chain.run(docs)]
+    prompts = [combine_documents_chain.llm_chain.prompt.template]
 
     print()
     print("ChatGPT output:")
-    print(textwrap.fill(outputs[0]))
+    print(outputs[0])
 
     # Log prediction
     print()
@@ -93,8 +129,8 @@ with mlflow.start_run():
     print()
     print("Logging the table artifacts")
     data_dict = {
-        "prompts": prompts,
-        "inputs": inputs,
+        "url": website,
+        "model": "ChatGPT",
         "outputs": outputs,
     }
     df = pd.DataFrame(data_dict)
